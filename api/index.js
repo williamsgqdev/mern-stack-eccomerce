@@ -28,11 +28,6 @@ app.use("/api/carts", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/checkout", stripeRoute);
 
-app.use(express.static(path.join(__dirname, "/<front end app folder name>/build")));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '/<front end app folder name>/build', 'index.html'));
-});
 app.listen(process.env.PORT || 5000, () => {
   console.log("connected");
 });

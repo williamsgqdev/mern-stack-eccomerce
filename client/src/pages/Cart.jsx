@@ -5,10 +5,11 @@ import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { Add, Remove } from "@material-ui/icons";
 import { mobile } from "../responsive";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import StripeCheckout from "react-stripe-checkout";
 import { userRequest } from "../requestMethods";
 import { useHistory } from "react-router";
+import { reduceProduct, reset } from "../redux/cartRedux";
 
 // const KEY = process.env.REACT_APP_STRIPE_KEY;
 
@@ -146,9 +147,19 @@ const Button = styled.button`
 const Cart = () => {
   const cart = useSelector((state) => state.cart);
   const [stripeToken, setStripeToken] = useState(null);
+  const dispatch = useDispatch();
   const history = useHistory();
   const onToken = (token) => {
     setStripeToken(token);
+  };
+
+  console.log(cart);
+
+  const item_quantity = (operator, i) => {
+    if (operator === "inc") {
+    } else {
+      dispatch(reduceProduct(i));
+    }
   };
 
   useEffect(() => {
@@ -156,10 +167,13 @@ const Cart = () => {
       try {
         const res = await userRequest.post("/checkout/payment", {
           tokenId: stripeToken.id,
-          amount: 500,
+          amount: cart.total * 100,
         });
-        history.push("/success", { data: res.data});
-      } catch {}
+
+        history.push("/success", { data: res.data });
+      } catch (err) {
+        console.log(err);
+      }
     };
     stripeToken && makeRequest();
   }, [stripeToken, cart, history]);
@@ -172,14 +186,18 @@ const Cart = () => {
         <Top>
           <TopButton>CONTINUE SHOPING</TopButton>
           <TopTexts>
-            <TopText>Shopping Cart (2)</TopText>
+            <TopText>
+              Shopping Cart ({cart.length > 0 ? cart.length : 0}){" "}
+            </TopText>
             <TopText>Your Wishlist (0)</TopText>
           </TopTexts>
-          <TopButton type="filled">CHECKOUT NOW</TopButton>
+          <TopButton type="filled" onClick={reset}>
+            Clear Cart
+          </TopButton>
         </Top>
         <Bottom>
           <Info>
-            {cart.products.map((product) => (
+            {cart.products.map((product, index) => (
               <Product>
                 <ProductDetail>
                   <Image src={product.img} />
@@ -199,9 +217,9 @@ const Cart = () => {
 
                 <PriceDetail>
                   <ProductAmountContainer>
-                    <Add />
+                    <Add onClick={() => item_quantity("inc", index)} />
                     <ProductAmount> {product.quantity}</ProductAmount>
-                    <Remove />
+                    <Remove onClick={() => item_quantity("dec", index)} />
                   </ProductAmountContainer>
                   <ProductPrice>
                     $ {product.price * product.quantity}
@@ -229,18 +247,20 @@ const Cart = () => {
               <SummaryItemText>Total</SummaryItemText>
               <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
             </SummaryItem>
-            <StripeCheckout
-              name="Williams Shop"
-              image="https://avatars.githubusercontent.com/u/1486366?v=4"
-              billingAddress
-              shippingAddress
-              description={`Your total is $${cart.total}`}
-              amount={cart.total * 100}
-              token={onToken}
-              stripeKey="pk_test_51JsUiRGT4k8dBCuXe6dHf0qr31BXHMdEuLvEt5x6geFFjnByWDWkrXtQhgWlWrQ1nA80vdx2WAFNWppMGE6udwKu00qO4q68nq"
-            >
-              <Button>CHECKOUT NOW</Button>
-            </StripeCheckout>
+            {cart.total > 0 && (
+              <StripeCheckout
+                name="Williams Shop"
+                image="https://avatars.githubusercontent.com/u/1486366?v=4"
+                billingAddress
+                shippingAddress
+                description={`Your total is $${cart.total}`}
+                amount={cart.total * 100}
+                token={onToken}
+                stripeKey="pk_test_51JsUiRGT4k8dBCuXe6dHf0qr31BXHMdEuLvEt5x6geFFjnByWDWkrXtQhgWlWrQ1nA80vdx2WAFNWppMGE6udwKu00qO4q68nq"
+              >
+                <Button>CHECKOUT NOW</Button>
+              </StripeCheckout>
+            )}
           </Summary>
         </Bottom>
       </Wrapper>

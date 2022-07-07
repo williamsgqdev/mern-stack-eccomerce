@@ -4,7 +4,7 @@ import { Search, ShoppingCartOutlined } from "@material-ui/icons";
 import Badge from "@material-ui/core/Badge";
 import { mobile } from "../responsive";
 import { useSelector } from "react-redux";
-import {Link} from "react-router-dom"
+import { Link } from "react-router-dom";
 
 const Container = styled.div`
   height: 60px;
@@ -75,7 +75,9 @@ const Navbar = () => {
           </SearchContainer>
         </Left>
         <Center>
-          <Logo>WILLIAMS.</Logo>
+          <Link to="/">
+            <Logo>WILLIAMS.</Logo>
+          </Link>
         </Center>
         <Right>
           <MenuItem>REGISTER</MenuItem>
